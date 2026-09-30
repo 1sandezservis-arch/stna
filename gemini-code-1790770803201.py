@@ -76,12 +76,22 @@ def video_frame_callback(frame: av.VideoFrame) -> av.VideoFrame:
 
     return av.VideoFrame.from_ndarray(result, format="bgr24")
 
-# --- Запуск WebRTC стриму ---
+# --- Запуск WebRTC стриму (із захистом від відкриття програвача) ---
 webrtc_streamer(
     key="wallpaper-ar-stream",
     mode=WebRtcMode.SENDRECV,
     rtc_configuration=RTC_CONFIGURATION,
     video_frame_callback=video_frame_callback,
-    media_stream_constraints={"video": {"facingMode": "environment"}, "audio": False},
+    media_stream_constraints={
+        "video": {"facingMode": "environment"},  # Намагається використати задню камеру
+        "audio": False
+    },
+    video_html_attrs={
+        "autoPlay": True,
+        "controls": False,        # Приховує панель програвача (Play/Pause)
+        "style": {"width": "100%"},
+        "playsinline": True,      # Змушує відео грати всередині сторінки (не у плеєрі)
+        "muted": True             # Обов'язково для автовідтворення на iOS/Android
+    },
     async_processing=True,
 )
